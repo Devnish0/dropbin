@@ -1,0 +1,1 @@
+export const cookieName = "dropbin_user_id"
