@@ -64,3 +64,22 @@ Record durable understanding, not every definition encountered.
   ```
 
 - **Related concepts:** Lazy provisioning, Request waterfall avoidance, AsyncLocalStorage, Next.js cookie restrictions, Ghost entity bloat.
+
+## 2026-10-05: Unambiguous Alphabet & Collision Retry Strategy
+
+- **Learner's explanation:** Generating 4–6 character codes for drops without adding bloated third-party dependencies.
+- **Corrected understanding:** Public shareable slugs are often read by humans on one device (e.g. laptop) and manually typed on another (e.g. phone). Removing visually ambiguous characters (`0`, `O`, `1`, `I`, `l`) prevents user input errors while preserving a massive space (56^6 ≈ 30.8 billion permutations). Pairing native cryptographic randomness with an optimistic insert and bounded retry loop handles any theoretical collisions without locking or pre-checking.
+- **Example:**
+  ```ts
+  const ALPHABET = "23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+  // Bounded retry loop for auto-generated codes
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await db.insert(drops).values({ code: generateCode(), ... });
+    } catch (err) {
+      if (isUniqueViolation(err) && attempt < MAX_RETRIES) continue;
+      throw err;
+    }
+  }
+  ```
+- **Related concepts:** Cryptographic PRNG, Base56 encoding, Human-centered identifier design, Collision retry loop, Postgres error 23505.
