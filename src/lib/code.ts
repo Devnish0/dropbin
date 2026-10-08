@@ -1,7 +1,8 @@
 import crypto from "crypto";
 
 // 56-character alphabet excluding ambiguous characters: 0, O, I, l, 1
-const UNAMBIGUOUS_ALPHABET = "23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+const UNAMBIGUOUS_ALPHABET =
+  "23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 
 /**
  * Generates a cryptographically secure random slug.
@@ -20,10 +21,16 @@ export function generateCode(length = 6): string {
  * Validates whether a user-supplied custom code is valid for URLs.
  * Allows 3 to 64 alphanumeric characters, dashes, and underscores.
  */
-export function isValidCustomCode(code: string): { valid: boolean; error?: string } {
+export function isValidCustomCode(code: string): {
+  valid: boolean;
+  error?: string;
+} {
   const trimmed = code.trim();
   if (trimmed.length < 3) {
-    return { valid: false, error: "Custom code must be at least 3 characters." };
+    return {
+      valid: false,
+      error: "Custom code must be at least 3 characters.",
+    };
   }
   if (trimmed.length > 64) {
     return { valid: false, error: "Custom code cannot exceed 64 characters." };
@@ -31,7 +38,11 @@ export function isValidCustomCode(code: string): { valid: boolean; error?: strin
   // URL-safe characters only: letters, digits, underscores, and hyphens
   const regex = /^[a-zA-Z0-9_-]+$/;
   if (!regex.test(trimmed)) {
-    return { valid: false, error: "Custom code can only contain letters, numbers, hyphens, and underscores." };
+    return {
+      valid: false,
+      error:
+        "Custom code can only contain letters, numbers, hyphens, and underscores.",
+    };
   }
   return { valid: true };
 }

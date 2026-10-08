@@ -1,8 +1,6 @@
 import { createTextDrop } from "@/lib/drops";
 import { createTextDropSchema } from "@/lib/validations/drop";
-import { error } from "console";
 import { NextResponse } from "next/server";
-import { success } from "zod";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -16,7 +14,7 @@ export async function POST(request: Request) {
   }
   const response = await createTextDrop(parsedBody.data);
 
-  console.log(response);
+  // console.log(response);
 
   return NextResponse.json(response);
 }
