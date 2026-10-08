@@ -11,4 +11,12 @@ Record meaningful bugs or recurring misconceptions. Preserve the original reason
 - **Category:** Configuration / Syntax trap.
 - **Prevention:** Remember that Docker short-form port and volume mappings (`source:target`) are strings without internal spaces. Always check that named volumes appear in the root `volumes:` block.
 - **Follow-up exercise:** Inspect `docker volume ls` after container startup to verify where Docker created `dropbin_postgres_data`.
+## 2026-10-08: Drizzle ORM Error Wrapper & Cause Property
 
+- **Problem:** When inserting duplicate codes, Postgres error code `23505` was not caught by `isUniqueViolation(error)`, returning an unexpected fallback error (`"this should not happen"`).
+- **Mistake:** Checked `(error as any).code === "23505"` directly on the caught exception.
+- **Original mental model:** Believed that Node.js database exceptions directly expose driver error codes at the top-level `error.code`.
+- **Correct mental model:** Drizzle ORM wraps underlying database driver errors inside a custom `DrizzleQueryError`. The top-level `error.code` is `undefined`, while the native driver's error object (with `code: "23505"`) is placed inside `error.cause`. Catch handlers must inspect `err.code === "23505" || err.cause?.code === "23505"`.
+- **Category:** ORM Abstraction Trap / Exception Handling.
+- **Prevention:** Always inspect `err.cause` when handling underlying driver-specific codes in modern ORMs (Drizzle, Prisma, etc.), and log unfamiliar caught errors to avoid silent fall-throughs.
+- **Follow-up exercise:** Test handling other driver error codes (such as foreign key violations `23503`) through `err.cause`.

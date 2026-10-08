@@ -4,25 +4,23 @@ import getOrCreateSession from "./session";
 import { db } from "@/db";
 import { generateCode, isValidCustomCode } from "./code";
 import { and, eq, gt, lt, sql } from "drizzle-orm";
+import { createTextDropInput } from "./validations/drop";
 
-interface createTextDropInput {
-  code?: string;
-  textContent: string;
-  MaxViews: number;
-  duration?: ExpiryDuration;
-}
+// interface createTextDropInput {
+//   code?: string;
+//   textContent: string;
+//   MaxViews?: number;
+//   duration?: ExpiryDuration;
+// }
 
 export type CreateDropResult =
   | { success: true; drop: Drop }
   | { success: false; error: string; code?: string };
 
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code: string }).code === "23505"
-  );
+  if (typeof error !== "object" || error === null) return false;
+  const err = error as { code?: string; cause?: { code?: string } };
+  return err.code === "23505" || err.cause?.code === "23505";
 }
 
 export async function createTextDrop(
@@ -60,7 +58,7 @@ export async function createTextDrop(
         type: "text",
         userId,
         textContent,
-        maxViews: input.MaxViews || 100,
+        maxViews: input.maxViews || 100,
         expiresAt,
       })
       .returning();
@@ -72,8 +70,8 @@ export async function createTextDrop(
         error: "this key exists use another key please",
       };
     }
+    return { success: false, error: "this should not happen" };
   }
-  return { success: false, error: "this should not happen" };
 }
 
 // getting by code
