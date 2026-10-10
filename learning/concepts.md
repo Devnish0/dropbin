@@ -83,3 +83,18 @@ Record durable understanding, not every definition encountered.
   }
   ```
 - **Related concepts:** Cryptographic PRNG, Base56 encoding, Human-centered identifier design, Collision retry loop, Postgres error 23505.
+
+## 2026-10-10: Two-Phase Direct Object Storage Uploads (Presigned URLs)
+
+- **Learner's explanation:** How to upload files to Cloudflare R2 without routing heavy files through the Next.js server.
+- **Corrected understanding:** Proxying large uploads through application servers (Node.js/Next.js) consumes valuable server RAM, risks request timeout limits (e.g. serverless payload caps), and creates network bottlenecks. Instead, the two-phase upload pattern decouples metadata authorization from payload transport: (1) The client requests a short-lived presigned PUT URL with validated metadata; (2) The client uploads directly to Cloudflare R2's global edge; (3) The client finalizes by registering the `fileKey` in PostgreSQL.
+- **Example:**
+  ```ts
+  // 1. Backend generates presigned PUT URL:
+  const command = new PutObjectCommand({ Bucket: R2_BUCKET, Key: fileKey, ContentType });
+  const uploadUrl = await getSignedUrl(r2, command, { expiresIn: 300 });
+
+  // 2. Client executes direct PUT to storage:
+  await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+  ```
+- **Related concepts:** Presigned URLs, CORS Preflight (OPTIONS), Zero-proxy architecture, S3 PutObjectCommand.
