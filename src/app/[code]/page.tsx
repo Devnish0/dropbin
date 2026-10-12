@@ -23,7 +23,7 @@ interface PageProps {
 export default async function DropViewerPage({ params }: PageProps) {
   const { code } = await params;
   const drop = await getDropByCode(code);
-
+  console.log(drop);
   if (!drop) {
     return (
       <main className="max-w-2xl mx-auto w-full px-6 py-20 flex flex-col items-center justify-center text-center">
@@ -34,7 +34,8 @@ export default async function DropViewerPage({ params }: PageProps) {
           Drop Not Found or Expired
         </h1>
         <p className="mt-2 text-sm text-secondary max-w-md">
-          This drop may have reached its view limit, passed its expiration time, or the code is incorrect.
+          This drop may have reached its view limit, passed its expiration time,
+          or the code is incorrect.
         </p>
 
         <Link
@@ -67,8 +68,12 @@ export default async function DropViewerPage({ params }: PageProps) {
             <CloudFog className="w-4 h-4 stroke-[2.2]" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-primary">Dropbin</h1>
-            <p className="text-[11px] text-secondary font-mono">← Back to Dropbin</p>
+            <h1 className="text-lg font-bold tracking-tight text-primary">
+              Dropbin
+            </h1>
+            <p className="text-[11px] text-secondary font-mono">
+              ← Back to Dropbin
+            </p>
           </div>
         </Link>
 
@@ -94,7 +99,11 @@ export default async function DropViewerPage({ params }: PageProps) {
       <div className="flex flex-wrap items-center justify-between gap-4 mt-8 mb-4">
         <div>
           <span className="text-xs font-mono uppercase tracking-widest text-secondary font-semibold">
-            {drop.type === "image" ? "Image Drop" : drop.type === "file" ? "File Drop" : "Text Drop"}
+            {drop.type === "image"
+              ? "Image Drop"
+              : drop.type === "file"
+                ? "File Drop"
+                : "Text Drop"}
           </span>
           <h2 className="text-3xl font-serif font-bold text-primary mt-0.5">
             /{drop.code}
@@ -125,7 +134,8 @@ export default async function DropViewerPage({ params }: PageProps) {
         <div className="rounded-2xl bg-[#f2f4ef] dark:bg-card/70 border border-border/80 overflow-hidden shadow-xs">
           <div className="flex items-center justify-between px-5 py-3 border-b border-border/60 bg-white/40 dark:bg-black/20 font-mono text-xs text-secondary">
             <span>
-              {drop.textContent.length} characters • {lineCount} {lineCount === 1 ? "line" : "lines"}
+              {drop.textContent.length} characters • {lineCount}{" "}
+              {lineCount === 1 ? "line" : "lines"}
             </span>
             <span>UTF-8 Encoded</span>
           </div>
@@ -167,7 +177,8 @@ export default async function DropViewerPage({ params }: PageProps) {
             {drop.fileName || "Attached File"}
           </h3>
           <p className="mt-1 text-sm font-mono text-secondary">
-            {formatFileSize(drop.fileSize)} • {drop.mimeType || "application/octet-stream"}
+            {formatFileSize(drop.fileSize)} •{" "}
+            {drop.mimeType || "application/octet-stream"}
           </p>
 
           {drop.downloadUrl && (
