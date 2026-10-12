@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Eye, Sparkles } from "lucide-react";
+import { Clock, Eye, Link, Sparkles } from "lucide-react";
 import { ExpiryDuration } from "@/lib/expiry";
 
 interface DropSettingsProps {
@@ -17,8 +17,8 @@ const DURATIONS: { label: string; value: ExpiryDuration }[] = [
   { label: "30 mins", value: "30m" },
   { label: "1 hour", value: "1h" },
   { label: "6 hours", value: "6h" },
-  { label: "1 day", value: "1d" },
-  { label: "7 days", value: "7d" },
+  // { label: "1 day", value: "1d" },
+  // { label: "7 days", value: "7d" },
 ];
 
 export function DropSettings({
@@ -34,21 +34,27 @@ export function DropSettings({
       {/* 1. Custom Code Option */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-semibold text-primary uppercase tracking-wider flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5" />
+          <Link className="w-3.5 h-3.5" />
           <span>Custom Code (Optional)</span>
         </label>
         <div className="flex items-center rounded-xl bg-white dark:bg-card border border-border/70 px-3 py-2 text-sm shadow-2xs focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all">
-          <span className="text-secondary/50 font-mono text-xs select-none">/</span>
+          <span className="text-secondary/50 font-mono text-xs select-none">
+            /
+          </span>
           <input
             type="text"
             value={customCode}
-            onChange={(e) => onCustomCodeChange(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+            onChange={(e) =>
+              onCustomCodeChange(
+                e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""),
+              )
+            }
             placeholder="my-custom-slug"
             maxLength={64}
             className="w-full bg-transparent pl-1 text-foreground placeholder:text-secondary/40 font-mono text-xs outline-none"
           />
         </div>
-        <span className="text-[11px] text-secondary/60">Leave empty to generate a random 6-character code</span>
+        {/* <span className="text-[11px] text-secondary/60">Leave empty to generate a random 6-character code</span> */}
       </div>
 
       {/* 2. Expiration Selector */}
@@ -68,7 +74,9 @@ export function DropSettings({
             </option>
           ))}
         </select>
-        <span className="text-[11px] text-secondary/60">Drop automatically self-destructs after this duration</span>
+        {/* <span className="text-[11px] text-secondary/60">
+          Drop automatically self-destructs after this duration
+        </span> */}
       </div>
 
       {/* 3. Max Views / Burn After Reading */}
@@ -89,7 +97,9 @@ export function DropSettings({
           <option value={100}>100 views (Standard)</option>
           <option value={1000}>1,000 views</option>
         </select>
-        <span className="text-[11px] text-secondary/60">Delete automatically once max view count is reached</span>
+        {/* <span className="text-[11px] text-secondary/60">
+          Delete automatically once max view count is reached
+        </span> */}
       </div>
     </div>
   );

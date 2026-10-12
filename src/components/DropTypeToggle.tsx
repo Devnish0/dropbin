@@ -38,9 +38,9 @@ export function DropTypeToggle({ value, onChange }: DropTypeToggleProps) {
       >
         <Paperclip className="w-4 h-4 stroke-[2.2]" />
         <span>Files / Media</span>
-        <span className="px-1.5 py-0.5 text-[10px] font-bold tracking-wider rounded bg-primary text-accent">
+        {/* <span className="px-1.5 py-0.5 text-[10px] font-bold tracking-wider rounded bg-primary text-accent">
           5 GB
-        </span>
+        </span> */}
       </button>
     </div>
   );

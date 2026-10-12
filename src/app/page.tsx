@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CloudFog, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { DropTypeToggle, DropType } from "@/components/DropTypeToggle";
 import { PasteEditor } from "@/components/PasteEditor";
 import { FileDropzone } from "@/components/FileDropzone";
 import { DropSettings } from "@/components/DropSettings";
 import { DropSuccessModal } from "@/components/DropSuccessModal";
+import {
+  RecentDrops,
+  saveDropToStorage,
+  getStoredDrops,
+} from "@/components/RecentDrops";
 import { ExpiryDuration } from "@/lib/expiry";
 
 export default function Home() {
@@ -22,11 +27,17 @@ export default function Home() {
   // Submission State
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [refreshHistory, setRefreshHistory] = useState(0);
+  const [dropCount, setDropCount] = useState<number | null>(null);
   const [createdDrop, setCreatedDrop] = useState<{
     code: string;
     type: "text" | "image" | "file";
     maxViews: number;
   } | null>(null);
+
+  useEffect(() => {
+    setDropCount(getStoredDrops().length);
+  }, []);
 
   const handleReset = () => {
     setTextContent("");
@@ -41,7 +52,9 @@ export default function Home() {
 
     // Basic frontend checks
     if (dropType === "text" && !textContent.trim()) {
-      setErrorMessage("Please enter some text or secret note to create a drop.");
+      setErrorMessage(
+        "Please enter some text or secret note to create a drop.",
+      );
       return;
     }
     if (dropType === "file" && !selectedFile) {
@@ -78,6 +91,15 @@ export default function Home() {
           type: "text",
           maxViews: data.drop.maxViews,
         });
+
+        saveDropToStorage({
+          code: data.drop.code,
+          type: "text",
+          createdAt: data.drop.createdAt,
+          expiresAt: data.drop.expiresAt,
+          maxViews: data.drop.maxViews,
+        });
+        setRefreshHistory((prev) => prev + 1);
       } else if (selectedFile) {
         // -------------------------------------------------------------
         // 3-Step Direct-to-R2 File Drop Flow
@@ -95,7 +117,9 @@ export default function Home() {
 
         const presignData = await presignRes.json();
         if (!presignData.uploadUrl) {
-          throw new Error(presignData.error || "Failed to get upload authorization.");
+          throw new Error(
+            presignData.error || "Failed to get upload authorization.",
+          );
         }
 
         // Step 2: Upload raw file bytes directly to Cloudflare R2
@@ -130,7 +154,9 @@ export default function Home() {
 
         const finalDropData = await dropRes.json();
         if (!finalDropData.success) {
-          throw new Error(finalDropData.error || "Failed to save drop metadata.");
+          throw new Error(
+            finalDropData.error || "Failed to save drop metadata.",
+          );
         }
 
         setCreatedDrop({
@@ -138,9 +164,21 @@ export default function Home() {
           type: finalDropData.drop.type,
           maxViews: finalDropData.drop.maxViews,
         });
+
+        saveDropToStorage({
+          code: finalDropData.drop.code,
+          type: finalDropData.drop.type,
+          fileName: finalDropData.drop.fileName || selectedFile.name,
+          createdAt: finalDropData.drop.createdAt,
+          expiresAt: finalDropData.drop.expiresAt,
+          maxViews: finalDropData.drop.maxViews,
+        });
+        setRefreshHistory((prev) => prev + 1);
       }
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setErrorMessage(
+        err instanceof Error ? err.message : "An unexpected error occurred.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -155,15 +193,23 @@ export default function Home() {
             <CloudFog className="w-5 h-5 stroke-[2.2]" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-primary">Dropbin</h1>
-            <p className="text-xs text-secondary font-mono">Secure Ephemeral Storage</p>
+            <h1 className="text-2xl font-bold tracking-tight text-primary">
+              Dropbin
+            </h1>
+            <p className="text-xs text-secondary font-mono">
+              Secure Ephemeral Storage
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-mono font-medium text-primary">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Live
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>
+              {dropCount !== null
+                ? `${dropCount} ${dropCount === 1 ? "drop" : "drops"} made`
+                : "0 drops made"}
+            </span>
           </span>
         </div>
       </header>
@@ -174,7 +220,8 @@ export default function Home() {
           Drop text, images, or files
         </h2>
         <p className="mt-2 text-sm text-secondary">
-          Store with an optional custom code and share with an automatic expiration.
+          Store with an optional custom code and share with an automatic
+          expiration.
         </p>
 
         {!createdDrop && (
@@ -234,7 +281,7 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-accent transition-transform group-hover:scale-110" />
+                  {/* <Sparkles className="w-4 h-4 text-accent transition-transform group-hover:scale-110" /> */}
                   <span>Create Drop</span>
                 </>
               )}
@@ -242,6 +289,9 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* 4. Local Storage Drop History */}
+      <RecentDrops refreshKey={refreshHistory} onCountChange={setDropCount} />
     </main>
   );
 }
