@@ -4,7 +4,8 @@ import getOrCreateSession from "./session";
 import { db } from "@/db";
 import { generateCode, isValidCustomCode } from "./code";
 import { and, eq, gt, lt, sql } from "drizzle-orm";
-import { createTextDropInput } from "./validations/drop";
+import { createFileDropInput, createTextDropInput } from "./validations/drop";
+import { getPresignedDownloadUrl } from "./r2";
 
 // interface createTextDropInput {
 //   code?: string;
@@ -74,11 +75,59 @@ export async function createTextDrop(
   }
 }
 
+export async function createFileDrop(
+  input: createFileDropInput,
+): Promise<CreateDropResult> {
+  const userId = await getOrCreateSession();
+  const expiresAt = calculateExpiresAt(input.duration);
+
+  // TODO: ADD THE CUSTOM CODE RETRY LOGIC
+
+  // 3. Handle custom code vs auto-generated code
+  if (input.code && input.code.trim()) {
+    const code = input.code.trim();
+    const validation = isValidCustomCode(code);
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: validation.error || "Invalid custom code.",
+      };
+    }
+  }
+
+  try {
+    const [newDrop] = await db
+      .insert(drops)
+      .values({
+        userId,
+        code: input.code?.trim() || generateCode(),
+        type: input.type,
+        fileKey: input.fileKey,
+        fileName: input.fileName,
+        fileSize: input.fileSize,
+        mimeType: input.mimeType,
+        maxViews: input.maxViews || 100,
+        expiresAt,
+      })
+      .returning();
+    return { success: true, drop: newDrop };
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      return {
+        success: false,
+        error: "this key exists use another key please",
+      };
+    }
+    return { success: false, error: "this should not happen" };
+  }
+}
 // getting by code
+
+export type DropWithDownloadUrl = Drop & { downloadUrl?: string };
 
 export async function getDropByCode(
   incomingCode: string,
-): Promise<Drop | null> {
+): Promise<DropWithDownloadUrl | null> {
   if (!isValidCustomCode(incomingCode)) {
     return null;
   }
@@ -105,8 +154,17 @@ export async function getDropByCode(
       .set({ views: sql`${drops.views} + 1` })
       .where(eq(drops.id, drop.id));
 
-    return { ...drop, views: drop.views + 1 };
+    let downloadUrl: string | undefined = undefined;
+    if (drop.fileKey) {
+      downloadUrl = await getPresignedDownloadUrl(
+        drop.fileKey,
+        drop.fileName ?? undefined,
+      );
+    }
+
+    return { ...drop, views: drop.views + 1, downloadUrl };
   } catch (error) {
     return null;
   }
 }
+

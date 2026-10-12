@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { file } from "zod";
 import { EXPIRY_DURATIONS, ExpiryDuration } from "../expiry";
 
 const durationKeys = Object.keys(EXPIRY_DURATIONS) as [
@@ -22,3 +22,19 @@ export const createTextDropSchema = z.object({
 });
 
 export type createTextDropInput = z.infer<typeof createTextDropSchema>;
+
+export const createFileDropSchema = z.object({
+  type: z.enum(["image", "file"]),
+  fileKey: z.string().min(1).max(255),
+  fileName: z.string().min(1).max(255),
+  fileSize: z
+    .number()
+    .int()
+    .positive()
+    .max(100 * 1024 * 1024),
+  mimeType: z.string(),
+  code: z.string().trim().optional(),
+  duration: z.enum(durationKeys).default("30m"),
+  maxViews: z.number().int().min(1).max(10_000).default(100),
+});
+export type createFileDropInput = z.infer<typeof createFileDropSchema>;
