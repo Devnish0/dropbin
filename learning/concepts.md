@@ -97,4 +97,5 @@ Record durable understanding, not every definition encountered.
   // 2. Client executes direct PUT to storage:
   await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
   ```
-- **Related concepts:** Presigned URLs, CORS Preflight (OPTIONS), Zero-proxy architecture, S3 PutObjectCommand.
+- **Related concepts:** Presigned URLs, CORS Preflight (OPTIONS), Zero-proxy architecture, S3 PutObjectCommand, PutBucketCorsCommand.
+- **Gotcha / Key requirement:** Because Step 2 issues a cross-origin `fetch()` directly from the browser (`Origin: http://localhost:3000`) to Cloudflare R2 (`https://<account>.r2.cloudflarestorage.com`), the browser will first send an HTTP `OPTIONS` preflight request. If the R2 bucket lacks a `CORSRule` matching the origin, methods (`PUT`, `GET`), and headers (`*`), Cloudflare responds with `403 Forbidden` and the browser aborts with `TypeError: Failed to fetch`. Configured via `PutBucketCorsCommand`.

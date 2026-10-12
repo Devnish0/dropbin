@@ -11,6 +11,7 @@ Record meaningful bugs or recurring misconceptions. Preserve the original reason
 - **Category:** Configuration / Syntax trap.
 - **Prevention:** Remember that Docker short-form port and volume mappings (`source:target`) are strings without internal spaces. Always check that named volumes appear in the root `volumes:` block.
 - **Follow-up exercise:** Inspect `docker volume ls` after container startup to verify where Docker created `dropbin_postgres_data`.
+
 ## 2026-10-08: Drizzle ORM Error Wrapper & Cause Property
 
 - **Problem:** When inserting duplicate codes, Postgres error code `23505` was not caught by `isUniqueViolation(error)`, returning an unexpected fallback error (`"this should not happen"`).
@@ -20,3 +21,15 @@ Record meaningful bugs or recurring misconceptions. Preserve the original reason
 - **Category:** ORM Abstraction Trap / Exception Handling.
 - **Prevention:** Always inspect `err.cause` when handling underlying driver-specific codes in modern ORMs (Drizzle, Prisma, etc.), and log unfamiliar caught errors to avoid silent fall-throughs.
 - **Follow-up exercise:** Test handling other driver error codes (such as foreign key violations `23503`) through `err.cause`.
+
+## 2026-10-13: Presigned URL Upload vs Drop DB Creation Validation Coupling
+
+- **Problem:** When uploading files or images from the UI, the client received `Invalid option: expected one of "image"|"file"` during Step 1 (requesting the presigned upload URL).
+- **Mistake:** Replaced `fileUploadSchema` with `createFileDropSchema` in `/api/upload/presigned-url` and called `createFileDrop` before the file was uploaded to R2.
+- **Original mental model:** Believed that all file-related requests should validate against the single `createFileDropSchema`.
+- **Correct mental model:** A two-phase direct object storage upload decouples upload authorization from database record registration:
+  1. Step 1 (`/api/upload/presigned-url`) only validates `{ fileName, contentType, fileSize }` using `fileUploadSchema` and returns `{ uploadUrl, fileKey }`. At this point, the client does not possess a `fileKey` nor is the drop registered in the database.
+  2. Step 2 (Browser direct PUT) uploads bytes to R2.
+  3. Step 3 (`/api/drop`) receives `{ type, fileKey, fileName, fileSize, mimeType, ... }` and persists the record into PostgreSQL using `createFileDropSchema`.
+- **Category:** Architecture / Multi-phase API Contract Trap.
+- **Prevention:** Do not validate intermediate phase payloads with final entity schemas. Ensure each step in a multi-phase flow validates only the data relevant to its stage.
