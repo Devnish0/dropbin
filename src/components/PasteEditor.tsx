@@ -37,13 +37,13 @@ export function PasteEditor({ value, onChange }: PasteEditorProps) {
         {/* Left: Dynamic Counts */}
         <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
           <span>{charCount} characters</span>
+          <span className="text-secondary/40">•</span>
           <span>
             {lineCount} {lineCount === 1 ? "line" : "lines"}
           </span>
-          <span className="text-secondary/40">•</span>
-          <span className="text-secondary/70">UTF-8 Encoded</span>
+          {/* <span className="text-secondary/70">UTF-8 Encoded</span> */}
 
-          {value.length === 0 && (
+          {/* {value.length === 0 && (
             <button
               type="button"
               onClick={handlePasteClipboard}
@@ -52,14 +52,13 @@ export function PasteEditor({ value, onChange }: PasteEditorProps) {
               <ClipboardPaste className="w-3.5 h-3.5" />
               <span>Paste Clipboard</span>
             </button>
-          )}
+          )} */}
         </div>
-
         {/* Right: Security Badge */}
-        <div className="flex items-center gap-1.5 text-secondary/80">
-          <Lock className="w-3.5 h-3.5 stroke-[2]" />
-          <span>Client-side Buffer Only</span>
-        </div>
+        {/* <div className="flex items-center gap-1.5 text-secondary/80"> */}
+        {/* <Lock className="w-3.5 h-3.5 stroke-[2]" /> */}
+        {/* <span>Client-side Buffer Only</span> */}
+        {/* </div> */}
       </div>
     </div>
   );
