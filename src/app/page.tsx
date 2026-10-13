@@ -277,7 +277,7 @@ export default function Home() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-accent" />
-                  <span>Encrypting & Storing...</span>
+                  <span>Storing...</span>
                 </>
               ) : (
                 <>

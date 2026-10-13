@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -47,6 +48,20 @@ export async function deleteR2Object(key: string) {
   const command = new DeleteObjectCommand({
     Bucket: R2_BUCKET_NAME,
     Key: key,
+  });
+  return r2.send(command);
+}
+
+export async function deleteR2ObjectsBatch(keys: string[]) {
+  if (keys.length == 0) {
+    return;
+  }
+  const command = new DeleteObjectsCommand({
+    Bucket: R2_BUCKET_NAME,
+    Delete: {
+      Objects: keys.map((Key) => ({ Key })),
+      Quiet: true,
+    },
   });
   return r2.send(command);
 }
