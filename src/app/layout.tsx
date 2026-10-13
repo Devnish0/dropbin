@@ -14,7 +14,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Dropbin – Ephemeral Pastes & File Sharing",
-  description: "Share text, images, and files with custom codes and auto-expiration.",
+  description:
+    "Share text, images, and files with custom codes and auto-expiration.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+  },
 };
 
 export default function RootLayout({
